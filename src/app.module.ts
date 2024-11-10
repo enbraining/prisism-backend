@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { Chat } from './room/entities/chat.entity';
 import { Room } from './room/entities/room.entity';
 import { RoomModule } from './room/room.module';
 import { SocketModule } from './socket/socket.module';
@@ -18,7 +17,7 @@ import { SocketModule } from './socket/socket.module';
       password: '1234',
       database: 'wstest',
       port: 5432,
-      entities: [Room, Chat],
+      entities: [Room],
       synchronize: false,
     }),
   ],
