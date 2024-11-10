@@ -12,6 +12,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Room } from 'src/room/entities/room.entity';
+import { RoomType } from 'src/room/entities/roomType.enum';
 import { Repository } from 'typeorm';
 
 @WebSocketGateway(3030, {
@@ -40,15 +41,25 @@ export class SocketGateway
   }
 
   async handleDisconnect(client: Socket) {
-    const clientId = client.id;
     const room = await this.roomRepository
       .createQueryBuilder('room')
-      .where(':clientId = ANY(room.users)', { clientId })
+      .where(':clientId = ANY(room.users)', { clientId: client.id })
       .getOne();
 
     if (room) {
-      room.users = room.users.filter((user) => user != client.id);
-      this.roomRepository.save(room);
+      await this.roomRepository
+        .createQueryBuilder()
+        .update()
+        .set({
+          users: () => 'array_remove(users, :clientId)',
+        })
+        .where('id = :roomId', { roomId: room.id })
+        .setParameter('clientId', client.id)
+        .execute();
+
+      if (room.type == RoomType.Random) {
+        await this.roomRepository.delete({ id: room.id });
+      }
     }
 
     this.logger.log(`kor disConnected! - ${client.id}`);
@@ -88,5 +99,33 @@ export class SocketGateway
     const prevUsers = currentRoom ? currentRoom.users : [];
     currentRoom.users = [...prevUsers, client.id];
     this.roomRepository.save(currentRoom);
+  }
+
+  @SubscribeMessage('random-join')
+  async joinRandomRoom(@ConnectedSocket() client: Socket) {
+    const randomRoom = await this.roomRepository
+      .createQueryBuilder('room')
+      .where({ type: RoomType.Random })
+      .andWhere('array_length(room.users, 1) = 1')
+      .orderBy('room.createdAt', 'DESC')
+      .getOne();
+
+    if (!randomRoom) {
+      const newRoom = await await this.roomRepository.save({
+        type: RoomType.Random,
+        users: [client.id],
+        maxUser: 2,
+      });
+
+      client.emit('get-room', {
+        roomId: newRoom.id,
+      });
+    } else {
+      randomRoom['users'] = [...randomRoom.users, client.id];
+      const joinedRoom = await this.roomRepository.save(randomRoom);
+      client.emit('get-room', {
+        roomId: joinedRoom.id,
+      });
+    }
   }
 }

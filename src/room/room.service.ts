@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { Room } from './entities/room.entity';
+import { RoomType } from './entities/roomType.enum';
 
 @Injectable()
 export class RoomService implements OnModuleInit {
@@ -36,6 +37,7 @@ export class RoomService implements OnModuleInit {
       slug: originTitle,
       title: countedTitle,
       maxUser: createRoomDto.maxUser,
+      type: RoomType.Common,
       users: [],
     };
     const newRoom: Room = await this.roomRepository.save(newPartialRoom);
@@ -43,7 +45,11 @@ export class RoomService implements OnModuleInit {
   }
 
   async findAll() {
-    const rooms = await this.roomRepository.find();
+    const rooms = await this.roomRepository
+      .createQueryBuilder('room')
+      .orderBy('array_length(room.users, 1)', 'ASC')
+      .where({ type: RoomType.Common })
+      .getMany();
     return rooms.map((room) => {
       return {
         id: room.id,
