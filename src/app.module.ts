@@ -18,7 +18,7 @@ import { SocketModule } from './socket/socket.module';
       database: 'wstest',
       port: 5432,
       entities: [Room],
-      synchronize: false,
+      synchronize: true,
     }),
   ],
   controllers: [AppController],

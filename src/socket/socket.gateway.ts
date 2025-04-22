@@ -47,6 +47,11 @@ export class SocketGateway
       .getOne();
 
     if (room) {
+      this.wsServer.emit(`sub-message-${room.id}`, {
+        message: '상대방이 방을 나갔습니다.',
+        client: 'notice',
+      });
+
       await this.roomRepository
         .createQueryBuilder()
         .update()
@@ -126,6 +131,13 @@ export class SocketGateway
       client.emit('get-room', {
         roomId: joinedRoom.id,
       });
+
+      if (joinedRoom.users.length >= 2) {
+        this.wsServer.emit(`sub-message-${joinedRoom.id}`, {
+          message: '상대방과 매칭되었습니다.',
+          client: 'notice',
+        });
+      }
     }
   }
 }
