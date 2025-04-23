@@ -75,6 +75,11 @@ export class SocketGateway
     @MessageBody() data: any,
     @ConnectedSocket() client: Socket,
   ) {
+    const message = data.message as string;
+    if (message.length > 80) {
+      return;
+    }
+
     const clientId = client.id;
     const room = await this.roomRepository
       .createQueryBuilder('room')
@@ -104,6 +109,11 @@ export class SocketGateway
     const prevUsers = currentRoom ? currentRoom.users : [];
     currentRoom.users = [...prevUsers, client.id];
     this.roomRepository.save(currentRoom);
+
+    this.wsServer.emit(`sub-message-${currentRoom.id}`, {
+      message: '상대방과 매칭되었습니다.',
+      client: 'JOIN',
+    });
   }
 
   @SubscribeMessage('random-join')
