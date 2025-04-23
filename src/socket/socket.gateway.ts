@@ -15,7 +15,7 @@ import { Room } from 'src/room/entities/room.entity';
 import { RoomType } from 'src/room/entities/roomType.enum';
 import { Repository } from 'typeorm';
 
-@WebSocketGateway(3001, {
+@WebSocketGateway(3030, {
   transports: ['websocket'],
   namespace: 'chat',
 })
