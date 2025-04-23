@@ -75,11 +75,6 @@ export class SocketGateway
     @MessageBody() data: any,
     @ConnectedSocket() client: Socket,
   ) {
-    const message = data.message as string;
-    if (message.length > 80) {
-      return;
-    }
-
     const clientId = client.id;
     const room = await this.roomRepository
       .createQueryBuilder('room')
@@ -117,7 +112,10 @@ export class SocketGateway
   }
 
   @SubscribeMessage('random-join')
-  async joinRandomRoom(@ConnectedSocket() client: Socket) {
+  async joinRandomRoom(
+    @MessageBody() data: any,
+    @ConnectedSocket() client: Socket,
+  ) {
     const randomRoom = await this.roomRepository
       .createQueryBuilder('room')
       .where({ type: RoomType.Random })
@@ -146,6 +144,11 @@ export class SocketGateway
         this.wsServer.emit(`sub-message-${joinedRoom.id}`, {
           message: '상대방과 매칭되었습니다.',
           client: 'JOIN',
+        });
+
+        this.wsServer.emit(`sub-e2ee-${joinedRoom.id}`, {
+          message: data.publicKey,
+          client: client.id,
         });
       }
     }
