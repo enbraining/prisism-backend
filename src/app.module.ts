@@ -5,18 +5,20 @@ import { AppService } from './app.service';
 import { Room } from './room/entities/room.entity';
 import { RoomModule } from './room/room.module';
 import { SocketModule } from './socket/socket.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
     SocketModule,
     RoomModule,
+    ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'localhost',
-      username: 'postgres',
-      password: '1234',
-      database: 'wstest',
-      port: 5432,
+      port: parseInt(process.env.DB_PORT),
+      host: process.env.DB_HOST,
+      username: process.env.DB_USERNAME,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
       entities: [Room],
       synchronize: true,
     }),
