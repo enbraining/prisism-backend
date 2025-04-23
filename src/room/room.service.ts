@@ -59,4 +59,16 @@ export class RoomService implements OnModuleInit {
       };
     });
   }
+
+  async getSocketCount() {
+    const rooms = await this.roomRepository
+      .createQueryBuilder('room')
+      .getMany();
+
+    const count = rooms.reduce((acc, room) => acc + room.users.length, 0);
+
+    return {
+      count: count,
+    };
+  }
 }
