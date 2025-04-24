@@ -105,17 +105,14 @@ export class SocketGateway
     currentRoom.users = [...prevUsers, client.id];
     this.roomRepository.save(currentRoom);
 
-    this.wsServer.emit(`sub-message-${currentRoom.id}`, {
+    this.wsServer.emit(`sub-notice-${currentRoom.id}`, {
       message: '상대방과 매칭되었습니다.',
       client: 'JOIN',
     });
   }
 
   @SubscribeMessage('random-join')
-  async joinRandomRoom(
-    @MessageBody() data: any,
-    @ConnectedSocket() client: Socket,
-  ) {
+  async joinRandomRoom(@ConnectedSocket() client: Socket) {
     const randomRoom = await this.roomRepository
       .createQueryBuilder('room')
       .where({ type: RoomType.Random })
@@ -124,7 +121,7 @@ export class SocketGateway
       .getOne();
 
     if (!randomRoom) {
-      const newRoom = await await this.roomRepository.save({
+      const newRoom = await this.roomRepository.save({
         type: RoomType.Random,
         users: [client.id],
         maxUser: 2,
@@ -141,16 +138,29 @@ export class SocketGateway
       });
 
       if (joinedRoom.users.length >= 2) {
-        this.wsServer.emit(`sub-message-${joinedRoom.id}`, {
+        this.wsServer.emit(`sub-notice-${joinedRoom.id}`, {
           message: '상대방과 매칭되었습니다.',
           client: 'JOIN',
         });
 
-        this.wsServer.emit(`sub-e2ee-${joinedRoom.id}`, {
-          message: data.publicKey,
-          client: client.id,
-        });
+        this.wsServer.emit(`start-e2ee-${joinedRoom.id}`);
       }
     }
+  }
+
+  @SubscribeMessage('send-e2ee')
+  async sendPublicKey(
+    @MessageBody() data: any,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const currentRoom = await this.roomRepository
+      .createQueryBuilder('room')
+      .where(':userId = ANY(room.users)', { userId: client.id })
+      .getOne();
+
+    this.wsServer.emit(`sent-e2ee-${currentRoom.id}`, {
+      publicKey: data.publicKey,
+      keyOwner: client.id,
+    });
   }
 }
