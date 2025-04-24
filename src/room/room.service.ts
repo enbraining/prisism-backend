@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { BadRequestException, Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateRoomDto } from './dto/create-room.dto';
@@ -20,24 +20,16 @@ export class RoomService implements OnModuleInit {
       .execute();
   }
 
-  async create(createRoomDto: CreateRoomDto) {
-    const originTitle = createRoomDto.title;
-    const isExistTitle = await this.roomRepository.existsBy({
-      slug: originTitle,
-    });
-
-    const sameTitleCount = await this.roomRepository.countBy({
-      slug: originTitle,
-    });
-    const countedTitle = isExistTitle
-      ? `${originTitle} [${sameTitleCount}]`
-      : originTitle;
+  async create(createRoomDto: CreateRoomDto, ip: string) {
+    if (this.roomRepository.existsBy({ title: createRoomDto.title })) {
+      throw new BadRequestException('해당 이름은 이미 사용중입니다.');
+    }
 
     const newPartialRoom: Partial<Room> = {
-      slug: originTitle,
-      title: countedTitle,
+      title: createRoomDto.title,
       maxUser: createRoomDto.maxUser,
       type: RoomType.Common,
+      ip: ip,
       users: [],
     };
     const newRoom: Room = await this.roomRepository.save(newPartialRoom);
@@ -56,6 +48,7 @@ export class RoomService implements OnModuleInit {
         title: room.title,
         userCount: room.users.length,
         maxUser: room.maxUser,
+        ip: room.ip,
       };
     });
   }

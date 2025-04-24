@@ -30,6 +30,7 @@
     "@nestjs/websockets": "^10.4.7",
     "@socket.io/redis-adapter": "^8.3.0",
     "flatted": "^3.3.1",
+    "nestjs-real-ip": "^3.0.1",
     "pg": "^8.13.1",
     "redis": "^4.7.0",
     "reflect-metadata": "^0.2.0",

@@ -11,8 +11,8 @@ export class Room {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ nullable: true })
-  slug?: string;
+  @Column({ nullable: false })
+  ip: string;
 
   @Column({ nullable: true })
   title?: string;
