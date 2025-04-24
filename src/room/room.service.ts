@@ -21,7 +21,7 @@ export class RoomService implements OnModuleInit {
   }
 
   async create(createRoomDto: CreateRoomDto, ip: string) {
-    if (this.roomRepository.existsBy({ title: createRoomDto.title })) {
+    if (await this.roomRepository.existsBy({ title: createRoomDto.title })) {
       throw new BadRequestException('해당 이름은 이미 사용중입니다.');
     }
 
@@ -32,8 +32,8 @@ export class RoomService implements OnModuleInit {
       ip: ip,
       users: [],
     };
-    const newRoom: Room = await this.roomRepository.save(newPartialRoom);
-    return newRoom.id;
+
+    await this.roomRepository.save(newPartialRoom);
   }
 
   async findAll() {
@@ -48,7 +48,7 @@ export class RoomService implements OnModuleInit {
         title: room.title,
         userCount: room.users.length,
         maxUser: room.maxUser,
-        ip: room.ip,
+        ip: room.ip.split('.').slice(0, 2).join('.') + '.xxx.xxx',
       };
     });
   }
