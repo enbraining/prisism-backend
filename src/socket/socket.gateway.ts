@@ -11,6 +11,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { History } from 'src/room/entities/history.entity';
 import { Room } from 'src/room/entities/room.entity';
 import { RoomType } from 'src/room/entities/roomType.enum';
 import { Repository } from 'typeorm';
@@ -26,6 +27,8 @@ export class SocketGateway
     private readonly logger: Logger,
     @InjectRepository(Room)
     private readonly roomRepository: Repository<Room>,
+    @InjectRepository(History)
+    private readonly historyRepository: Repository<History>,
   ) {}
   @WebSocketServer()
   wsServer: Server;
@@ -85,6 +88,14 @@ export class SocketGateway
       message: data.message,
       client: client.id,
     });
+
+    if (room.type === RoomType.Common) {
+      this.historyRepository.save({
+        content: data.message,
+        clientId: client.id,
+        room: room,
+      });
+    }
   }
 
   @SubscribeMessage('join')

@@ -6,6 +6,7 @@ import { Room } from './room/entities/room.entity';
 import { RoomModule } from './room/room.module';
 import { SocketModule } from './socket/socket.module';
 import { ConfigModule } from '@nestjs/config';
+import { History } from './room/entities/history.entity';
 
 @Module({
   imports: [
@@ -19,7 +20,7 @@ import { ConfigModule } from '@nestjs/config';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [Room],
+      entities: [Room, History],
       synchronize: true,
     }),
   ],
