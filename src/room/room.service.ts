@@ -4,12 +4,15 @@ import { Repository } from 'typeorm';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { Room } from './entities/room.entity';
 import { RoomType } from './entities/roomType.enum';
+import { History } from './entities/history.entity';
 
 @Injectable()
 export class RoomService implements OnModuleInit {
   constructor(
     @InjectRepository(Room)
     private readonly roomRepository: Repository<Room>,
+    @InjectRepository(History)
+    private readonly historyRepository: Repository<History>,
   ) {}
 
   async onModuleInit() {
@@ -63,5 +66,24 @@ export class RoomService implements OnModuleInit {
     return {
       count: count,
     };
+  }
+
+  async getRoomHistory(roomId: string) {
+    const room = await this.roomRepository.findOneBy({
+      id: roomId,
+    });
+
+    const histories = await this.historyRepository.find({
+      where: { room: room },
+      order: { createdAt: 'ASC' },
+    });
+
+    return histories.map((history) => {
+      return {
+        id: history.id,
+        clientId: history.clientId,
+        content: history.content,
+      };
+    });
   }
 }

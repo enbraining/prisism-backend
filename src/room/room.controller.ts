@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { RoomService } from './room.service';
 import { RealIP } from 'nestjs-real-ip';
@@ -20,5 +20,10 @@ export class RoomController {
   @Get('/count')
   getSocketCount() {
     return this.roomService.getSocketCount();
+  }
+
+  @Get('/:roomId/history')
+  getRoomHistory(@Param('roomId') roomId: string) {
+    return this.roomService.getRoomHistory(roomId);
   }
 }
