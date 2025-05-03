@@ -23,7 +23,7 @@ export class RoomController {
   }
 
   @Get('/:roomId/history')
-  getRoomHistory(@Param('roomId') roomId: string) {
-    return this.roomService.getRoomHistory(roomId);
+  async getRoomHistory(@Param('roomId') roomId: string) {
+    return await this.roomService.getRoomHistory(roomId);
   }
 }
