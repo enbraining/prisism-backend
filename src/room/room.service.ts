@@ -78,12 +78,10 @@ export class RoomService implements OnModuleInit {
       order: { createdAt: 'ASC' },
     });
 
-    return histories.map((history) => {
-      return {
-        id: history.id,
-        clientId: history.clientId,
-        content: history.content,
-      };
-    });
+    return histories.map(({ id, clientId, content }) => ({
+      id,
+      clientId,
+      content,
+    }));
   }
 }
