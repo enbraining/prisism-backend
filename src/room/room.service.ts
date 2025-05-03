@@ -69,12 +69,8 @@ export class RoomService implements OnModuleInit {
   }
 
   async getRoomHistory(roomId: string) {
-    const room = await this.roomRepository.findOneBy({
-      id: roomId,
-    });
-
     const histories = await this.historyRepository.find({
-      where: { room: room },
+      where: { room: { id: roomId } },
       order: { createdAt: 'ASC' },
     });
 
