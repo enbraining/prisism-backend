@@ -50,7 +50,7 @@ export class SocketGateway
       .getOne();
 
     if (room) {
-      this.wsServer.emit(`sub-message-${room.id}`, {
+      this.wsServer.emit(`sub-notice-${room.id}`, {
         message: '상대방이 방을 나갔습니다.',
         client: 'END',
       });
